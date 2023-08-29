@@ -19,6 +19,20 @@ else
 fi
 echo
 
+if [ -d $JMETER_USER_PLUGINS_FOLDER ]
+then
+  echo "Installing custom plugins from ${JMETER_USER_PLUGINS_FOLDER}"
+  for plugin in ${JMETER_USER_PLUGINS_FOLDER}/*.jar; do
+      echo "Copying plugin $plugin to ${JMETER_HOME}/lib/ext/${plugin}"
+      cp $plugin ${JMETER_HOME}/lib/ext
+  done;
+else
+  echo "No custom plugins found in ${JMETER_USER_PLUGINS_FOLDER}"
+fi
+echo
+
+echo
+
 echo "********************************************************"
 echo "*            Initializing JMeter Master                *"
 echo "********************************************************"

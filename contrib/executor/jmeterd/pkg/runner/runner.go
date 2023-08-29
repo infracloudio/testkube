@@ -9,8 +9,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/kubeshop/testkube/contrib/executor/jmeterd/pkg/jmeter_env"
 	"github.com/kubeshop/testkube/contrib/executor/jmeter/pkg/parser"
+	"github.com/kubeshop/testkube/contrib/executor/jmeterd/pkg/jmeter_env"
 	"github.com/kubeshop/testkube/contrib/executor/jmeterd/pkg/slaves"
 	"github.com/kubeshop/testkube/pkg/api/v1/testkube"
 	"github.com/kubeshop/testkube/pkg/envs"
@@ -101,7 +101,7 @@ func (r *JMeterRunner) Run(ctx context.Context, execution testkube.Execution) (r
 	// compose parameters passed to JMeter with -J
 	params := make([]string, 0, len(envManager.Variables))
 	for _, value := range envManager.Variables {
-		
+
 		if value.Name == jmeter_env.MasterOverrideJvmArgs || value.Name == jmeter_env.MasterAdditionalJvmArgs {
 			//Skip JVM ARGS to be appended in the command
 			continue
@@ -114,6 +114,11 @@ func (r *JMeterRunner) Run(ctx context.Context, execution testkube.Execution) (r
 	if workingDir != "" {
 		runPath = workingDir
 	}
+
+	// The below three lines is required to add support for user plugins required to run the test
+	pluginPath := filepath.Join(runPath, "plugins")
+	envManager.Variables["JMETER_USER_PLUGINS_FOLDER"] = testkube.Variable{Name: "JMETER_USER_PLUGINS_FOLDER", Value: pluginPath}
+	slavesEnvVariables["JMETER_USER_PLUGINS_FOLDER"] = testkube.Variable{Name: "JMETER_USER_PLUGINS_FOLDER", Value: pluginPath}
 
 	outputDir := filepath.Join(runPath, "output")
 	// clean output directory it already exists, only useful for local development
