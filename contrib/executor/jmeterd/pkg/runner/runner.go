@@ -101,7 +101,6 @@ func (r *JMeterRunner) Run(ctx context.Context, execution testkube.Execution) (r
 	// compose parameters passed to JMeter with -J
 	params := make([]string, 0, len(envManager.Variables))
 	for _, value := range envManager.Variables {
-
 		if value.Name == jmeter_env.MasterOverrideJvmArgs || value.Name == jmeter_env.MasterAdditionalJvmArgs {
 			//Skip JVM ARGS to be appended in the command
 			continue
@@ -115,10 +114,15 @@ func (r *JMeterRunner) Run(ctx context.Context, execution testkube.Execution) (r
 		runPath = workingDir
 	}
 
-	// The below three lines is required to add support for user plugins required to run the test
-	pluginPath := filepath.Join(runPath, "plugins")
-	envManager.Variables["JMETER_USER_PLUGINS_FOLDER"] = testkube.Variable{Name: "JMETER_USER_PLUGINS_FOLDER", Value: pluginPath}
-	slavesEnvVariables["JMETER_USER_PLUGINS_FOLDER"] = testkube.Variable{Name: "JMETER_USER_PLUGINS_FOLDER", Value: pluginPath}
+	pluginPath := filepath.Join(filepath.Dir(path), "plugins")
+	// Set env plugin env variable to set custom plugin directory
+	// with this path custom plugin will be copied to jmeter's plugin directory
+	err = os.Setenv("JMETER_USER_PLUGINS_FOLDER", pluginPath)
+	if err != nil {
+		output.PrintLogf("%s Failed to set user plugin directory %s", ui.IconWarning, pluginPath)
+	}
+	// Add user plugins folder in slaves env variables
+	slavesEnvVariables["JMETER_USER_PLUGINS_FOLDER"] = testkube.NewBasicVariable("JMETER_USER_PLUGINS_FOLDER", pluginPath)
 
 	outputDir := filepath.Join(runPath, "output")
 	// clean output directory it already exists, only useful for local development
