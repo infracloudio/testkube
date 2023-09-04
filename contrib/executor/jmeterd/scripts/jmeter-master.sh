@@ -21,6 +21,7 @@ echo
 
 
 
+
 if [ -d ${JMETER_PARENT_TEST_FOLDER}/plugins ]
 then
   echo "Installing user plugins from ${JMETER_PARENT_TEST_FOLDER}/plugins"
