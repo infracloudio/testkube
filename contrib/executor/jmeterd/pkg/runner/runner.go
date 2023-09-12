@@ -161,17 +161,17 @@ func (r *JMeterDRunner) Run(ctx context.Context, execution testkube.Execution) (
 
 	slavesClient, err := slaves.NewClient(execution, r.Params, slavesEnvVariables)
 	if err != nil {
-		return *result.WithErrors(errors.Errorf("Getting error while creating slaves client: %v", err)), nil
+		return *result.WithErrors(errors.Wrap(err, "error creating slaves client")), nil
 	}
 
 	//creating slaves provided in SLAVES_COUNT env variable
 	slavesNameIpMap, err := slavesClient.CreateSlaves(ctx)
 	if err != nil {
-		return *result.WithErrors(errors.Errorf("Getting error while creating slaves nodes: %v", err)), nil
+		return *result.WithErrors(errors.Wrap(err, "error creating slaves")), nil
 	}
 	defer slavesClient.DeleteSlaves(ctx, slavesNameIpMap)
 
-	args = append(args, fmt.Sprintf("-R %v", slavesClient.GetSlavesIpString(slavesNameIpMap)))
+	args = append(args, fmt.Sprintf("-R %v", slaves.GetSlavesIpString(slavesNameIpMap)))
 
 	for i := range args {
 		if args[i] == "<envVars>" {
